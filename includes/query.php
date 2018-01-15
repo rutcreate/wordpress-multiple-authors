@@ -10,7 +10,7 @@ function multiple_authors_posts_where( $where, $query ) {
         $user_id = $query->get( 'author' );
         $prefix = $wpdb->prefix;
         $find_text = "({$prefix}posts.post_author = {$user_id})";
-        $replace_text = "{$prefix}multiple_authors.post_id IS NOT NULL AND {$prefix}multiple_authors.user_id = {$user_id}";
+        $replace_text = "{$prefix}multiple_authors.post_id IS NOT NULL AND {$prefix}multiple_authors.user_id = {$user_id} AND {$prefix}multiple_authors.section = 1";
         $where = str_replace( $find_text, $replace_text, $where );
     }
 
@@ -33,3 +33,17 @@ function multiple_authors_posts_join( $join, $query ) {
     return $join;
 }
 add_filter( 'posts_join', 'multiple_authors_posts_join', 10, 2 );
+
+/**
+ *
+ */
+function multiple_authors_get_the_archive_title( $title ) {
+    if ( is_author() ) {
+        $author = get_queried_object();
+        if ( $author ) {
+            $title = sprintf( __( 'Author: %s' ), '<span class="vcard">' . $author->data->display_name . '</span>' );
+        }
+    }
+    return $title;
+}
+add_filter( 'get_the_archive_title', 'multiple_authors_get_the_archive_title', 10, 1 );

@@ -12,9 +12,11 @@ Text Domain: multiple author
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'MULTIPLE_AUTHORS_PLUGIN_DIR', plugin_dir_path( __FILE__ ), true );
+define( 'MULTIPLE_AUTHORS_PLUGIN_URL', plugin_dir_url( __FILE__ ), true );
 define( 'MULTIPLE_AUTHORS_VERSION', '1.0', true );
 
 require_once MULTIPLE_AUTHORS_PLUGIN_DIR . 'includes/helper.php';
+require_once MULTIPLE_AUTHORS_PLUGIN_DIR . 'includes/api.php';
 require_once MULTIPLE_AUTHORS_PLUGIN_DIR . 'includes/install.php';
 require_once MULTIPLE_AUTHORS_PLUGIN_DIR . 'includes/ajax.php';
 require_once MULTIPLE_AUTHORS_PLUGIN_DIR . 'includes/admin.php';
