@@ -123,7 +123,6 @@ function multiple_authors_section_list() {
  * Add section form.
  */
 function multiple_authors_section_add() {
-    echo menu_page_url( 'multiple-authors-section-add', false );
 ?>
     <div class="wrap">
         <h1 class="">Add New Section</h1>
