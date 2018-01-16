@@ -189,7 +189,7 @@ function multiple_authors_section_order() {
         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
             <ul class="sortable">
                 <?php foreach ( $sections as $section ): ?>
-                <li>
+                <li style="cursor: move; background: #f7f7f7; border: 1px solid #ddd; padding: 5px 10px;">
                     <?php echo $section->title; ?>
                     <input type="hidden" name="sections[]" value="<?php echo $section->id; ?>" />
                 </li>
