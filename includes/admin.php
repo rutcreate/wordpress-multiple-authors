@@ -88,6 +88,15 @@ function multiple_authors_admin_menu() {
         'multiple-authors-section-order',
         'multiple_authors_section_order'
     );
+
+    add_submenu_page(
+        'multiple-authors',
+        'Advanced',
+        'Advanced',
+        'manage_options',
+        'multiple-authors-section-advanced',
+        'multiple_authors_section_advanced'
+    );
 }
 add_action( 'admin_menu', 'multiple_authors_admin_menu' );
 
@@ -205,6 +214,22 @@ function multiple_authors_section_order() {
 }
 
 /**
+ * Section order form.
+ */
+function multiple_authors_section_advanced() {
+?>
+    <div class="wrap">
+        <h1 class="">Advanced</h1>
+        <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+            <input type="hidden" name="action" value="multiple_authors_section_advanced" />
+            <?php wp_nonce_field( 'multiple-authors-advanced' ); ?>
+            <?php submit_button( 'Import author from original post', 'primary', 'import_post_author' ); ?>
+        </form>
+    </div>
+<?php
+}
+
+/**
  * Create section.
  */
 function multiple_authors_section_post_add() {
@@ -312,3 +337,46 @@ function multiple_authors_section_post_order() {
     exit();
 }
 add_action( 'admin_post_multiple_authors_section_order', 'multiple_authors_section_post_order' );
+
+/**
+ * 
+ */
+function multiple_authors_section_post_advanced() {
+    if ( ! isset( $_POST['_wpnonce'] ) ) {
+        die('Access denied.');
+    }
+
+    $nonce = $_POST['_wpnonce'];
+    if ( ! wp_verify_nonce( $nonce, 'multiple-authors-advanced' ) ) {
+      die( 'Access denied.' );
+    }
+
+    global $wpdb;
+    $posts = $wpdb->get_results( "SELECT ID, post_author FROM {$wpdb->prefix}posts WHERE post_type = 'post'" );
+    $table_name = "{$wpdb->prefix}multiple_authors";
+    foreach ( $posts as $post ) {
+        $wpdb->delete(
+            $table_name,
+            array(
+                'section' => 1,
+                'post_id' => $post->ID,
+                'user_id' => $post->post_author,
+            ),
+            array( '%d', '%d', '%d' )
+        );
+        $wpdb->insert(
+            $table_name,
+            array(
+                'post_id' => $post->ID,
+                'user_id' => $post->post_author,
+                'section' => 1,
+                'weight' => -99,
+            ),
+            array( '%d', '%d', '%d', '%d' )
+        );
+    }
+
+    wp_redirect( admin_url( 'admin.php?page=multiple-authors' ) );
+    exit();
+}
+add_action( 'admin_post_multiple_authors_section_advanced', 'multiple_authors_section_post_advanced' );
