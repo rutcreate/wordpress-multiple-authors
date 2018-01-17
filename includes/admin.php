@@ -352,7 +352,7 @@ function multiple_authors_section_post_advanced() {
     }
 
     global $wpdb;
-    $posts = $wpdb->get_results( "SELECT ID, post_author FROM {$wpdb->prefix}posts WHERE post_type = 'post'" );
+    $posts = $wpdb->get_results( "SELECT ID, post_author FROM {$wpdb->prefix}posts WHERE post_type = 'post' and post_status != 'auto-draft'" );
     $table_name = "{$wpdb->prefix}multiple_authors";
     foreach ( $posts as $post ) {
         $wpdb->delete(
