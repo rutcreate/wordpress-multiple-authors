@@ -16,9 +16,13 @@ function multiple_authors_get_count( $section_id , $user_id ) {
 /**
  * Return authors.
  */
-function get_multiple_authors() {
+function get_multiple_authors( $_post = NULL ) {
     global $wpdb;
     global $post;
+
+    if ( ! $_post ) {
+        $_post = $post;
+    }
 
     $authors = array();
 
@@ -38,7 +42,7 @@ function get_multiple_authors() {
         ON
             {$wpdb->prefix}multiple_authors_section.id = {$wpdb->prefix}multiple_authors.section
         WHERE
-            {$wpdb->prefix}multiple_authors.post_id = {$post->ID}
+            {$wpdb->prefix}multiple_authors.post_id = {$_post->ID}
         ORDER BY
             {$wpdb->prefix}multiple_authors_section.weight ASC,
             {$wpdb->prefix}multiple_authors.weight ASC
@@ -67,7 +71,7 @@ function get_multiple_authors() {
         if ( count( $titles ) > 0 ) {
             $result[1] = array(
                 'title' => $titles[0],
-                'users' => array( get_userdata( $post->post_author ) ),
+                'users' => array( get_userdata( $_post->post_author ) ),
             );
         }
     }
