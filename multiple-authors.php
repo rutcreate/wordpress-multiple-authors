@@ -21,11 +21,9 @@ if(!class_exists('WP_List_Table')){
 
 require_once MULTIPLE_AUTHORS_PLUGIN_DIR . 'includes/helper.php';
 require_once MULTIPLE_AUTHORS_PLUGIN_DIR . 'includes/api.php';
-require_once MULTIPLE_AUTHORS_PLUGIN_DIR . 'classes/class-multiple-authors-section-list-table.php';
+require_once MULTIPLE_AUTHORS_PLUGIN_DIR . 'includes/classes.php';
 require_once MULTIPLE_AUTHORS_PLUGIN_DIR . 'includes/install.php';
 require_once MULTIPLE_AUTHORS_PLUGIN_DIR . 'includes/ajax.php';
 require_once MULTIPLE_AUTHORS_PLUGIN_DIR . 'includes/admin.php';
 require_once MULTIPLE_AUTHORS_PLUGIN_DIR . 'includes/meta-box.php';
 require_once MULTIPLE_AUTHORS_PLUGIN_DIR . 'includes/query.php';
-
-register_activation_hook( __FILE__, 'multiple_authors_install' );
