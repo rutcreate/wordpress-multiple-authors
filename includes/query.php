@@ -1,6 +1,20 @@
 <?php
 
 /**
+ * @param $distinct
+ * @param $query
+ *
+ * @return string
+ */
+function multiple_authors_posts_distinct( $distinct, $query ) {
+	if ( $query->is_author() ) {
+		$distinct = 'DISTINCT';
+	}
+	return $distinct;
+}
+add_filter( 'posts_distinct', 'multiple_authors_posts_distinct', 10, 2 );
+
+/**
  * Override author page query where statement.
  */
 function multiple_authors_posts_where( $where, $query ) {
