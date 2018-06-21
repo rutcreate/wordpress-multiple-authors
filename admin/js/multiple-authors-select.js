@@ -51,7 +51,7 @@ jQuery(function($) {
         }
 
         function removeItem(userId) {
-            $('.user-item-' + userId).remove();
+            $component.find('.user-item-' + userId).remove();
             refreshList();
         }
 
