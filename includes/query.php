@@ -1,6 +1,15 @@
 <?php
 
 /**
+ * Print sql.
+ */
+function dump_request( $input ) {
+	var_dump($input);
+	return $input;
+}
+add_filter( 'posts_request', 'dump_request' );
+
+/**
  * Override author page query where statement.
  */
 function multiple_authors_posts_where( $where, $query ) {
@@ -18,10 +27,7 @@ function multiple_authors_posts_where( $where, $query ) {
 
         $replace_text = "
         (
-	        (
-	            {$find_text} OR
-		        {$prefix}multiple_authors.user_id = {$user_id}
-		    ) {$section_where}
+	        {$prefix}multiple_authors.user_id = {$user_id} {$section_where}
 		)";
         $where = str_replace( $find_text, $replace_text, $where );
     }
