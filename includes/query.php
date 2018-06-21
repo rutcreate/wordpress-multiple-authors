@@ -1,15 +1,6 @@
 <?php
 
 /**
- * Print sql.
- */
-function dump_request( $input ) {
-	var_dump($input);
-	return $input;
-}
-add_filter( 'posts_request', 'dump_request' );
-
-/**
  * Override author page query where statement.
  */
 function multiple_authors_posts_where( $where, $query ) {
