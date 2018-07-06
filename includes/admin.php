@@ -4,7 +4,7 @@
  * Add javascript to admin.
  */
 function multiple_authors_admin_enqueue_scripts( $hook ) {
-    if ( $hook === 'post.php' ) {
+    if ( $hook === 'post.php' || $hook === 'post-new.php' ) {
         wp_enqueue_script(
             'multiple-authors',
             MULTIPLE_AUTHORS_PLUGIN_URL . 'admin/js/multiple-authors-select.js',
@@ -29,6 +29,7 @@ function multiple_authors_admin_enqueue_scripts( $hook ) {
             array(
                 'ajaxUrl' => admin_url( 'admin-ajax.php' ),
                 'users' => $users,
+                'user' => wp_get_current_user(),
             )
         );
     }

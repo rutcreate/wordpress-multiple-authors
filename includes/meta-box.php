@@ -47,7 +47,7 @@ function multiple_authors_meta_box_view( $post, $box ) {
     $input_name = "multiple_authors[{$section->id}][]";
     $input_value = implode( ',', $user_ids );
 
-    echo '<div class="multiple-authors-meta-box" data-name="'. $input_name .'" data-value="'. $input_value .'">';
+    echo '<div class="multiple-authors-meta-box" data-name="'. $input_name .'" data-value="'. $input_value .'" data-id="'. $section->id .'">';
     echo '<select></select>';
     echo '<ul class="sortable"></ul>';
     echo '</div>';

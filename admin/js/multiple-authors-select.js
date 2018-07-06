@@ -22,6 +22,7 @@ jQuery(function($) {
         var $selectList = $component.find('select');
         var inputName = $component.data('name');
         var inputValue = $component.data('value');
+        var sectionId = parseInt($component.data('id'));
         var values = inputValue ? inputValue.toString().split(',') : [];
 
         function showOption(userId) {
@@ -102,6 +103,10 @@ jQuery(function($) {
         });
 
         $component.addClass('processed');
+
+        if (sectionId === 1 && !inputValue) {
+            addItem(window.multipleAuthors.user.ID);
+        }
     });
 
 });
