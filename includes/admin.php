@@ -9,7 +9,7 @@ function multiple_authors_admin_enqueue_scripts( $hook ) {
             'multiple-authors',
             MULTIPLE_AUTHORS_PLUGIN_URL . 'admin/js/multiple-authors-select.js',
             array( 'jquery-ui-sortable' ),
-            '1.0.0',
+            '1.1.0',
             true
         );
 
