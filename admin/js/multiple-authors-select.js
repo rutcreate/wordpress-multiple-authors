@@ -6,107 +6,121 @@ jQuery(function($) {
     }
 
     var ajaxUrl = window.multipleAuthors.ajaxUrl;
-    var users = window.multipleAuthors.users;
 
-    function getUser(userId) {
-        for (var i = 0; i < users.length; i++) {
-            if ( users[i].id == userId ) {
-                return users[i];
-            }
-        }
+    function AuthorField(element) {
+        this.$el = $(element);
+        this.name = this.$el.data('name');
+        this.max = this.$el.data('max') || 0;
+        this.$wrapper = this.$el.find('.ma-field-author-input-wrapper');
+        this.init();
     }
 
-    $('.multiple-authors-meta-box:not(.processed)').each(function() {
-        var $component = $(this);
-        var $sortableList = $component.find('.sortable');
-        var $selectList = $component.find('select');
-        var inputName = $component.data('name');
-        var inputValue = $component.data('value');
-        var sectionId = parseInt($component.data('id'));
-        var values = inputValue ? inputValue.toString().split(',') : [];
-
-        function showOption(userId) {
-            $selectList.find('.option-user-' + userId).show();
-            $selectList.val('');
+    AuthorField.prototype.init = function() {
+        this.initSortable();
+        if (this.$wrapper.find('.item').size() === 0) {
+            this.addInput();
         }
+        this.addAddButton();
+        this.checkAddButtonState();
+        this.bindEvents();
+    };
 
-        function hideOption(userId) {
-            $selectList.find('.option-user-' + userId).hide();
-            $selectList.val('');
-        }
-
-        function addItem(userId, withoutRefresh) {
-            var user = getUser(userId);
-            if (user) {
-                $('\
-                <li class="user-item-' + userId + '">\
-                    <a href="#" data-id="' + user.id + '" class="button button-small remove">✗</a>\
-                    <span style="cursor:move;">' + user.display_name + '</span>\
-                    <input type="hidden" value="' + user.id + '" name="' + inputName + '" />\
-                </li>').appendTo($sortableList);
-            }
-
-            if (!withoutRefresh) {
-                refreshList();
-            }
-        }
-
-        function removeItem(userId) {
-            $component.find('.user-item-' + userId).remove();
-            refreshList();
-        }
-
-        function refreshList() {
-            $sortableList.sortable('refresh');
-        }
-
-        // Create list items.
-        for (var i = 0; i < values.length; i++) {
-            addItem(values[i], true);
-        }
-
-        // Create select list.
-        $('<option value="">- Select User -</option>').appendTo($selectList);
-        for (var i = 0; i < users.length; i++) {
-            var user = users[i];
-            $('<option></option>')
-                .val(user.id)
-                .text(user.display_name)
-                .addClass('option-user-' + user.id)
-                .appendTo($selectList);
-
-            if (values.indexOf(user.id) >= 0) {
-                hideOption(user.id);
-            }
-        }
-        $selectList.on('change', function(e) {
-            var userId = e.target.value.toString();
-            if (userId) {
-                hideOption(userId);
-                addItem(userId)
-            }
-        })
-
-        $sortableList
-            .disableSelection()
-            .sortable({
-                update: function(event, ui) {
-                    // updateValues();
-                }
-            });
-
-        $component.on('click', '.remove', function(e) {
-            e.preventDefault();
-            var userId = $(this).data('id');
-            removeItem(userId);
-            showOption(userId);
+    AuthorField.prototype.initSortable = function() {
+        this.$wrapper
+        .disableSelection()
+        .sortable({
+            handle: '.handle',
         });
+    };
 
-        $component.addClass('processed');
+    AuthorField.prototype.addInput = function() {
+        var $item = $('<li class="item"></li>');
+        var $handle = $('<span class="handle">&#9868;</span>');
+        var $input = $('<input type="text" class="ma-field-author-input regular-text" placeholder="Type here to find user." style="width:90%" />');
+        var $inputValue = $('<input type="hidden" class="ma-field-author-value" name="' + this.name + '[]" />');
+        var $closeButton = $('<a href="#" class="button button-small remove">&#10007;</a>');
+        $item.append($handle);
+        $item.append($input);
+        $item.append($inputValue);
+        $item.append($closeButton);
+        this.applyEventItem($item);
+        this.$wrapper.append($item);
+        this.$wrapper.sortable('refresh');
+    };
 
-        if (sectionId === 1 && !inputValue) {
-            addItem(window.multipleAuthors.user.ID);
+    AuthorField.prototype.addAddButton = function() {
+        var field = this;
+        this.$button = $('<a href="#" class="button">Add more user</a>');
+        this.$button.on('click', function(e) {
+            e.preventDefault();
+            field.addInput();
+            field.checkAddButtonState();
+        });
+        this.$el.append(this.$button);
+    };
+
+    AuthorField.prototype.checkAddButtonState = function() {
+        if (this.max > 0 && this.$wrapper.find('.item').size() >= this.max) {
+            this.$button.hide();
+        } else {
+            this.$button.show();
         }
+    };
+
+    AuthorField.prototype.applyEventItem = function($item) {
+        var field = this;
+        $item.find('.button.remove').on('click', function(e) {
+            e.preventDefault();
+            $item.remove();
+            field.checkAddButtonState();
+        });
+        this.applyAutocomplete($item.find('.ma-field-author-input'));
+    };
+
+    AuthorField.prototype.bindEvents = function() {
+        var field = this;
+        this.$wrapper.find('.item:not(processed)').addClass('processed').each(function() {
+            field.applyEventItem($(this));
+        });
+    };
+
+    AuthorField.prototype.applyAutocomplete = function($input) {
+        var field = this;
+        $input.autocomplete({
+            minLength: 1,
+            source: function(request, response) {
+                $(this.element.context).siblings('.ma-field-author-value').val('');
+
+                $.ajax( {
+                    url: ajaxUrl,
+                    method: 'POST',
+                    dataType: 'json',
+                    data: {
+                        search: request.term,
+                        action: 'ma_get_users'
+                    },
+                    success: function( resp ) {
+                        response( resp.data );
+                    }
+                } );
+            },
+            select: function(event, ui) {
+                var id = ui.item.id.toString();
+                $(this).siblings('.ma-field-author-value').val(id);
+
+                var label = ui.item.label;
+                $(this).val(label);
+
+                field.$wrapper.sortable('refresh');
+
+                field.checkAddButtonState();
+            }
+        });
+    };
+
+    $('.multiple-authors-meta-box:not(.processed)').each(function() {
+        new AuthorField(this);
+        console.log(this);
     });
 
 });
