@@ -10,7 +10,12 @@ function multiple_authors_posts_where( $where, $query ) {
         $user_id = $query->get( 'author' );
         $prefix = $wpdb->prefix;
         $find_text = "({$prefix}posts.post_author = {$user_id})";
-        $replace_text = "{$prefix}multiple_authors.post_id IS NOT NULL AND {$prefix}multiple_authors.user_id = {$user_id} AND {$prefix}multiple_authors.section = 1";
+        $replace_text = "{$prefix}multiple_authors.post_id IS NOT NULL AND {$prefix}multiple_authors.user_id = {$user_id}";
+
+        if ( $query->get('section') ) {
+            $replace_text .= " AND {$prefix}multiple_authors.section = {$query->get('section')} ";
+        }
+
         $where = str_replace( $find_text, $replace_text, $where );
     }
 
