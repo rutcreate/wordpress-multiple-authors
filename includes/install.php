@@ -31,8 +31,10 @@ function multiple_authors_install() {
     $wpdb->insert( $wpdb->prefix . 'multiple_authors_section', array(
         'id' => 1,
         'title' => 'Authors',
-        'weight' => -99
+        'key' => 'author',
+        'weight' => -99,
     ) );
 
 	add_option( 'multiple_authors_version', MULTIPLE_AUTHORS_VERSION );
 }
+register_activation_hook( __FILE__, 'multiple_authors_install' );

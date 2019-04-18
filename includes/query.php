@@ -1,6 +1,20 @@
 <?php
 
 /**
+ * @param $distinct
+ * @param $query
+ *
+ * @return string
+ */
+function multiple_authors_posts_distinct( $distinct, $query ) {
+	if ( $query->is_author() ) {
+		$distinct = 'DISTINCT';
+	}
+	return $distinct;
+}
+add_filter( 'posts_distinct', 'multiple_authors_posts_distinct', 10, 2 );
+
+/**
  * Override author page query where statement.
  */
 function multiple_authors_posts_where( $where, $query ) {
@@ -10,11 +24,22 @@ function multiple_authors_posts_where( $where, $query ) {
         $user_id = $query->get( 'author' );
         $prefix = $wpdb->prefix;
         $find_text = "({$prefix}posts.post_author = {$user_id})";
-        $replace_text = "{$prefix}multiple_authors.post_id IS NOT NULL AND {$prefix}multiple_authors.user_id = {$user_id}";
 
-        if ( $query->get('section') ) {
-            $replace_text .= " AND {$prefix}multiple_authors.section = {$query->get('section')} ";
+        // $replace_text = "{$prefix}multiple_authors.post_id IS NOT NULL AND {$prefix}multiple_authors.user_id = {$user_id}";
+
+        // if ( $query->get('section') ) {
+        //     $replace_text .= " AND {$prefix}multiple_authors.section = {$query->get('section')} ";
+        // }
+
+        $section_where = '';
+        if ( $sections = get_option( 'multiple_authors_allowed_sections' ) ) {
+			$section_where = " AND {$prefix}multiple_authors.section IN ({$sections})";
         }
+
+        $replace_text = "
+        (
+	        {$prefix}multiple_authors.user_id = {$user_id} {$section_where}
+		)";
 
         $where = str_replace( $find_text, $replace_text, $where );
     }

@@ -12,26 +12,35 @@ function multiple_authors_ajax_get_users() {
         wp_die();
     }
 
-    if ( ! isset( $_POST['s'] ) ) {
+    if ( ! isset( $_POST['search'] ) ) {
         wp_send_json( array(
-            'status' => true,
+            'status' => false,
+            'message' => 'No search data',
             'data' => array(),
         ) );
         wp_die();
     }
 
-    $args = array(
-        'search' => $_POST['s'],
-    );
+	$user_query = new WP_User_Query( array(
+		'search'         => '*'.esc_attr( $_POST['search'] ).'*',
+		'search_columns' => array(
+			'user_login',
+			'display_name',
+		),
+		'number' => $_POST['ipp'] ?: 10,
+	) );
+	$users = $user_query->get_results();
 
-    if ( isset( $_POST['exclude'] ) ) {
-        $args['exclude'] = explode( ',', $_POST['exclude'] );
+    $items = array();
+    foreach ( $users as $user ) {
+    	$items[] = array(
+    		'id' => $user->ID,
+		    'label' => $user->data->display_name . ' ('. $user->data->user_login .')',
+	    );
     }
-
-    $users = get_users( $args );
     wp_send_json( array(
         'status' => true,
-        'data' => $users,
+        'data' => $items,
     ) );
     wp_die();
 }

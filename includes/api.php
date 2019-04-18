@@ -71,14 +71,19 @@ function get_multiple_authors( $_post = NULL ) {
                 id = 1
         ");
         if ( count( $titles ) > 0 ) {
-            $result[1] = array(
+            $result[1] = (object) array(
                 'title' => $titles[0],
                 'users' => array( get_userdata( $_post->post_author ) ),
             );
         }
     }
-    // print_r($result);
-    return $result;
+
+    $sections = array();
+    foreach ( $result as $id => $section ) {
+    	$sections[] = $section;
+    }
+
+    return $sections;
 }
 
 /**

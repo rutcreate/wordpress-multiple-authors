@@ -4,12 +4,12 @@
  * Add javascript to admin.
  */
 function multiple_authors_admin_enqueue_scripts( $hook ) {
-    if ( $hook === 'post.php' ) {
+    if ( $hook === 'post.php' || $hook === 'post-new.php' ) {
         wp_enqueue_script(
             'multiple-authors',
             MULTIPLE_AUTHORS_PLUGIN_URL . 'admin/js/multiple-authors-select.js',
             array( 'jquery-ui-sortable' ),
-            '1.0.0',
+            '1.1.0',
             true
         );
 
@@ -29,6 +29,7 @@ function multiple_authors_admin_enqueue_scripts( $hook ) {
             array(
                 'ajaxUrl' => admin_url( 'admin-ajax.php' ),
                 'users' => $users,
+                'user' => wp_get_current_user(),
             )
         );
     }
@@ -91,11 +92,20 @@ function multiple_authors_admin_menu() {
 
     add_submenu_page(
         'multiple-authors',
-        'Advanced',
-        'Advanced',
+        'Import',
+        'Import',
         'manage_options',
-        'multiple-authors-section-advanced',
-        'multiple_authors_section_advanced'
+        'multiple-authors-section-import',
+        'multiple_authors_section_import'
+    );
+
+	add_submenu_page(
+		'multiple-authors',
+		'Advanced',
+		'Advanced',
+		'manage_options',
+		'multiple-authors-section-advanced',
+		'multiple_authors_section_advanced'
     );
 }
 add_action( 'admin_menu', 'multiple_authors_admin_menu' );
@@ -214,19 +224,67 @@ function multiple_authors_section_order() {
 }
 
 /**
- * Section order form.
+ * Section import.
  */
-function multiple_authors_section_advanced() {
+function multiple_authors_section_import() {
 ?>
     <div class="wrap">
-        <h1 class="">Advanced</h1>
+        <h1 class="">Import</h1>
+        <p>This will copy post author from all posts to multiple authors's database table.</p>
         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-            <input type="hidden" name="action" value="multiple_authors_section_advanced" />
-            <?php wp_nonce_field( 'multiple-authors-advanced' ); ?>
+            <input type="hidden" name="action" value="multiple_authors_section_import" />
+            <?php wp_nonce_field( 'multiple-authors-import' ); ?>
             <?php submit_button( 'Import author from original post', 'primary', 'import_post_author' ); ?>
         </form>
     </div>
 <?php
+}
+
+/**
+ * Section advanced.
+ */
+function multiple_authors_section_advanced() {
+    global $wpdb;
+	$sections = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}multiple_authors_section ORDER BY weight ASC" );
+	$allowed_sections = get_option( 'multiple_authors_allowed_sections', '' );
+	$allowed_sections = explode( ',', $allowed_sections );
+	?>
+    <div class="wrap">
+        <h1 class="">Advanced</h1>
+
+        <div id="poststuff">
+            <p>Selected section below will be display on archive author page. Leave unchecked all to display all section.</p>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                <input type="hidden" name="action" value="multiple_authors_section_advanced" />
+                <?php wp_nonce_field( 'multiple-authors-advanced' ); ?>
+
+                <table class="wp-list-table widefat fixed striped">
+                    <thead>
+                        <tr>
+                            <td id="cb" class="manage-column column-cb check-column">
+                            </td>
+                            <th scope="col" id="title" class="manage-column column-title column-primary">Section</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ( $sections as $section ): ?>
+                            <tr>
+                                <th scope="row" class="check-column">
+                                    <input type="checkbox" name="sections[]" value="<?php echo $section->id; ?>" <?php if ( in_array( $section->id, $allowed_sections ) ) echo ' checked="checked"'; ?> />
+                                </th>
+                                <td>
+                                    <?php echo $section->title; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+
+                <?php submit_button( 'Save', 'primary', 'import_post_author' ); ?>
+            </form>
+        </div>
+    </div>
+	<?php
 }
 
 /**
@@ -341,13 +399,13 @@ add_action( 'admin_post_multiple_authors_section_order', 'multiple_authors_secti
 /**
  * 
  */
-function multiple_authors_section_post_advanced() {
+function multiple_authors_section_post_import() {
     if ( ! isset( $_POST['_wpnonce'] ) ) {
         die('Access denied.');
     }
 
     $nonce = $_POST['_wpnonce'];
-    if ( ! wp_verify_nonce( $nonce, 'multiple-authors-advanced' ) ) {
+    if ( ! wp_verify_nonce( $nonce, 'multiple-authors-import' ) ) {
       die( 'Access denied.' );
     }
 
@@ -378,5 +436,34 @@ function multiple_authors_section_post_advanced() {
 
     wp_redirect( admin_url( 'admin.php?page=multiple-authors' ) );
     exit();
+}
+add_action( 'admin_post_multiple_authors_section_import', 'multiple_authors_section_post_import' );
+
+/**
+ *
+ */
+function multiple_authors_section_post_advanced() {
+	if ( ! isset( $_POST['_wpnonce'] ) ) {
+		die('Access denied.');
+	}
+
+	$nonce = $_POST['_wpnonce'];
+	if ( ! wp_verify_nonce( $nonce, 'multiple-authors-advanced' ) ) {
+		die( 'Access denied.' );
+	}
+
+    if ( isset( $_POST['sections'] ) && $_POST['sections'] ) {
+	    if ( is_array( $_POST['sections'] ) ) {
+	        $sections = implode( ',', $_POST['sections'] );
+        } else {
+	        $sections = $_POST['sections'];
+        }
+	    update_option( 'multiple_authors_allowed_sections', $sections );
+    } else {
+	    delete_option( 'multiple_authors_allowed_sections' );
+    }
+
+	wp_redirect( admin_url( 'admin.php?page=multiple-authors-section-advanced' ) );
+	exit();
 }
 add_action( 'admin_post_multiple_authors_section_advanced', 'multiple_authors_section_post_advanced' );

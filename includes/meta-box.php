@@ -44,13 +44,33 @@ function multiple_authors_meta_box_view( $post, $box ) {
         $user_ids[] = $result->user_id;
     }
 
-    $input_name = "multiple_authors[{$section->id}][]";
+    if ( $user_ids ) {
+	    $users = get_users( array(
+	    	'include' => $user_ids,
+		    'orderby' => 'include',
+	    ) );
+    }
+    else {
+    	$users = array();
+    }
+
+    $input_name = "multiple_authors[{$section->id}]";
     $input_value = implode( ',', $user_ids );
 
-    echo '<div class="multiple-authors-meta-box" data-name="'. $input_name .'" data-value="'. $input_value .'">';
-    echo '<select></select>';
-    echo '<ul class="sortable"></ul>';
-    echo '</div>';
+    echo '<div class="multiple-authors-meta-box" data-name="'. $input_name .'" data-value="'. $input_value .'" data-id="'. $section->id .'">';
+	echo '<ul class="sortable ma-field-author-input-wrapper" style="margin-top:0px">';
+	foreach ( $users as $user ) {
+		$label = $user->data->display_name .' ('. $user->data->user_login .')';
+		echo '<li class="item" data-id="'. $user->ID .'">';
+		echo '<span class="handle">&#9868;</span>';
+		echo '<input type="text" class="ma-field-author-input" value="'. $label .'" style="width:90%" />';
+		echo '<input type="hidden" class="ma-field-author-value" name="' . $input_name . '[]" value="'. $user->ID .'" />';
+		echo '<a href="#" class="button button-small remove">&#10007;</a> ';
+		echo '</li>';
+	}
+	echo '</ul>';
+	echo '</div>';
+
     multiple_authors_nonce_field( 'multiple_authors' );
 }
 
@@ -87,6 +107,7 @@ function multiple_authors_meta_box_save( $post_id ) {
         $section = $wpdb->get_row( "SELECT id FROM {$wpdb->prefix}multiple_authors_section WHERE id = {$section_id}" );
         if ( ! $section ) continue;
 
+        $user_ids = array_filter( $user_ids );
         foreach ( $user_ids as $weight => $user_id ) {
             if ( $section_id == 1 && $weight == 0 ) {
                 $wpdb->query( "UPDATE {$wpdb->prefix}posts SET post_author = {$user_id} WHERE ID = {$post_id}" );
