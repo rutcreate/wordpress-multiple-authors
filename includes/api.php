@@ -26,7 +26,7 @@ function get_multiple_authors( $_post = NULL ) {
 
     $authors = array();
 
-    if ( ! $post ) {
+    if ( ! $_post ) {
         return $authors;
     }
 
@@ -59,7 +59,7 @@ function get_multiple_authors( $_post = NULL ) {
             }
             $result[ $user->section ]->users[] = get_userdata( $user->user_id );
         }
-    } 
+    }
     else {
         $titles = $wpdb->get_col("
             SELECT
@@ -77,12 +77,7 @@ function get_multiple_authors( $_post = NULL ) {
         }
     }
 
-    $sections = array();
-    foreach ( $result as $id => $section ) {
-    	$sections[] = $section;
-    }
-
-    return $sections;
+    return $result;
 }
 
 /**
@@ -141,7 +136,7 @@ function get_multiple_authors_by_section( $_post = NULL, $section = NULL ) {
             }
             $result[ $user->section ]->users[] = get_userdata( $user->user_id );
         }
-    } 
+    }
     else {
         $titles = $wpdb->get_col("
             SELECT

@@ -23,23 +23,14 @@ function multiple_authors_posts_where( $where, $query ) {
     if ( $query->is_author() ) {
         $user_id = $query->get( 'author' );
         $prefix = $wpdb->prefix;
-        $find_text = "({$prefix}posts.post_author = {$user_id})";
-
-        // $replace_text = "{$prefix}multiple_authors.post_id IS NOT NULL AND {$prefix}multiple_authors.user_id = {$user_id}";
-
-        // if ( $query->get('section') ) {
-        //     $replace_text .= " AND {$prefix}multiple_authors.section = {$query->get('section')} ";
-        // }
+        $find_text = "{$prefix}posts.post_author IN ({$user_id})";
 
         $section_where = '';
         if ( $sections = get_option( 'multiple_authors_allowed_sections' ) ) {
 			$section_where = " AND {$prefix}multiple_authors.section IN ({$sections})";
         }
 
-        $replace_text = "
-        (
-	        {$prefix}multiple_authors.user_id = {$user_id} {$section_where}
-		)";
+        $replace_text = "({$prefix}multiple_authors.user_id IN({$user_id}) {$section_where})";
 
         $where = str_replace( $find_text, $replace_text, $where );
     }
