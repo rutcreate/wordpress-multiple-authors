@@ -92,6 +92,7 @@ function multiple_authors_meta_box_save( $post_id ) {
     // Author is required atleast 1 user.
     $user_ids = $authors[1];
     if ( ! is_array( $user_ids ) ) return;
+    $user_ids = array_filter( $user_ids );
     if ( count( $user_ids ) === 0 ) return;
 
     // Validate users existing.
